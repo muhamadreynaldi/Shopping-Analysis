@@ -22,7 +22,12 @@ if menu == "Gambaran Umum":
     st.write(dataframe.head())
 
     st.write("### Informasi Dataset")
-    st.write(dataframe.info())
+    df_info = pd.DataFrame({
+        "Column": dataframe.columns,
+        "Non-Null Count": dataframe.notnull().sum(),
+        "Dtype": dataframe.dtypes
+    }).reset_index(drop=True)
+    st.write(df_info)
 
     st.write("### Nilai yang Hilang")
     st.write(dataframe.isnull().sum())
@@ -60,19 +65,15 @@ if menu == "Visualisasi":
 if menu == "K-Means Clustering":
     st.subheader("K-Means Clustering")
 
-    # Memilih fitur untuk clustering
+    # Memilih fitur untuk clustering (hanya numerik)
     st.write("### Pilih Fitur untuk Clustering")
-    fitur = st.multiselect("Fitur", options=dataframe.columns, default=['Purchase Amount (USD)', 'Age'])
+    fitur_numerik = [kolom for kolom in dataframe.columns if pd.api.types.is_numeric_dtype(dataframe[kolom])]
+    fitur = st.multiselect("Fitur", options=fitur_numerik, default=['Purchase Amount (USD)', 'Age'])
 
     if len(fitur) > 1:
-        # Memeriksa apakah fitur yang dipilih bertipe numerik
-        fitur_numerik = [kolom for kolom in fitur if pd.api.types.is_numeric_dtype(dataframe[kolom])]
-        if len(fitur_numerik) < len(fitur):
-            st.warning("Beberapa fitur yang dipilih bukan numerik dan akan diabaikan.")
-
         # Menyiapkan data untuk clustering
-        data = dataframe.dropna(subset=fitur_numerik)
-        X = data[fitur_numerik]
+        data = dataframe.dropna(subset=fitur)
+        X = data[fitur]
         scaler = StandardScaler()
         try:
             X_scaled = scaler.fit_transform(X)
@@ -90,15 +91,15 @@ if menu == "K-Means Clustering":
 
         # Menampilkan hasil clustering
         st.write("### Pusat Cluster")
-        st.write(pd.DataFrame(kmeans.cluster_centers_, columns=fitur_numerik))
+        st.write(pd.DataFrame(kmeans.cluster_centers_, columns=fitur))
 
         st.write("### Data dengan Label Cluster")
-        st.write(data[['Cluster'] + fitur_numerik].head())
+        st.write(data[['Cluster'] + fitur].head())
 
         # Visualisasi cluster jika data 2D
-        if len(fitur_numerik) == 2:
+        if len(fitur) == 2:
             fig, ax = plt.subplots(figsize=(10, 6))
-            sns.scatterplot(x=fitur_numerik[0], y=fitur_numerik[1], hue='Cluster', data=data, palette='tab10', ax=ax)
+            sns.scatterplot(x=fitur[0], y=fitur[1], hue='Cluster', data=data, palette='tab10', ax=ax)
             ax.set_title("K-Means Clustering")
             st.pyplot(fig)
         else:
