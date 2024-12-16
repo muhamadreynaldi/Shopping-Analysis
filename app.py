@@ -80,7 +80,7 @@ if menu == "K-Means Clustering":
         # Memilih fitur untuk clustering (hanya numerik)
         st.write("### Pilih Fitur untuk Clustering")
         fitur_numerik = [kolom for kolom in data_filtered.columns if pd.api.types.is_numeric_dtype(data_filtered[kolom])]
-        fitur = st.multiselect("Fitur", options=fitur_numerik, default=['Purchase Amount (USD)', 'Age', 'Review Rating', 'Previous Purchases'])
+        fitur = st.multiselect("Fitur", options=fitur_numerik, default=['Purchase Amount (USD)', 'Age'])
 
         if len(fitur) > 1:
             # Menyiapkan data untuk clustering
